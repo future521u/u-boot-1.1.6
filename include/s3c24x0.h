@@ -82,7 +82,7 @@ typedef struct {
 	S3C24X0_REG32	PRIORITY;
 	S3C24X0_REG32	INTPND;
 	S3C24X0_REG32	INTOFFSET;
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	S3C24X0_REG32	SUBSRCPND;
 	S3C24X0_REG32	INTSUBMSK;
 #endif
@@ -92,11 +92,11 @@ typedef struct {
 /* DMAS (see manual chapter 8) */
 typedef struct {
 	S3C24X0_REG32	DISRC;
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	S3C24X0_REG32	DISRCC;
 #endif
 	S3C24X0_REG32	DIDST;
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	S3C24X0_REG32	DIDSTC;
 #endif
 	S3C24X0_REG32	DCON;
@@ -107,7 +107,7 @@ typedef struct {
 #ifdef CONFIG_S3C2400
 	S3C24X0_REG32	res[1];
 #endif
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	S3C24X0_REG32	res[7];
 #endif
 } /*__attribute__((__packed__))*/ S3C24X0_DMA;
@@ -145,7 +145,7 @@ typedef struct {
 	S3C24X0_REG32	res[8];
 	S3C24X0_REG32	DITHMODE;
 	S3C24X0_REG32	TPAL;
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	S3C24X0_REG32	LCDINTPND;
 	S3C24X0_REG32	LCDSRCPND;
 	S3C24X0_REG32	LCDINTMSK;
@@ -164,6 +164,15 @@ typedef struct {
 	S3C24X0_REG32	NFECC;
 } /*__attribute__((__packed__))*/ S3C2410_NAND;
 
+/* NAND FLASH (see S3C2440 manual chapter 6) */
+typedef struct {
+	S3C24X0_REG32	NFCONF;
+	S3C24X0_REG32	NFCMD;
+	S3C24X0_REG32	NFADDR;
+	S3C24X0_REG32	NFDATA;
+	S3C24X0_REG32	NFSTAT;
+	S3C24X0_REG32	NFECC;
+} /*__attribute__((__packed__))*/ S3C2440_NAND;
 
 /* UART (see manual chapter 11) */
 typedef struct {
@@ -401,7 +410,7 @@ typedef struct {
 	S3C24X0_REG32	MISCCR;
 	S3C24X0_REG32	EXTINT;
 #endif
-#ifdef CONFIG_S3C2410
+#if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
 	S3C24X0_REG32	GPACON;
 	S3C24X0_REG32	GPADAT;
 	S3C24X0_REG32	res1[2];
@@ -547,6 +556,13 @@ typedef struct {
 	S3C24X0_REG32	ADCDAT1;
 } /*__attribute__((__packed__))*/ S3C2410_ADC;
 
+typedef struct {
+	S3C24X0_REG32	ADCCON;
+	S3C24X0_REG32	ADCTSC;
+	S3C24X0_REG32	ADCDLY;
+	S3C24X0_REG32	ADCDAT0;
+	S3C24X0_REG32	ADCDAT1;
+} /*__attribute__((__packed__))*/ S3C2440_ADC;
 
 /* SPI (see manual chapter 22) */
 typedef struct {
@@ -647,6 +663,31 @@ typedef struct {
 	S3C24X0_REG32	SDIIMSK;
 } /*__attribute__((__packed__))*/ S3C2410_SDI;
 
+typedef struct {
+	S3C24X0_REG32	SDICON;
+	S3C24X0_REG32	SDIPRE;
+	S3C24X0_REG32	SDICARG;
+	S3C24X0_REG32	SDICCON;
+	S3C24X0_REG32	SDICSTA;
+	S3C24X0_REG32	SDIRSP0;
+	S3C24X0_REG32	SDIRSP1;
+	S3C24X0_REG32	SDIRSP2;
+	S3C24X0_REG32	SDIRSP3;
+	S3C24X0_REG32	SDIDTIMER;
+	S3C24X0_REG32	SDIBSIZE;
+	S3C24X0_REG32	SDIDCON;
+	S3C24X0_REG32	SDIDCNT;
+	S3C24X0_REG32	SDIDSTA;
+	S3C24X0_REG32	SDIFSTA;
+#ifdef __BIG_ENDIAN
+	S3C24X0_REG8	res[3];
+	S3C24X0_REG8	SDIDAT;
+#else
+	S3C24X0_REG8	SDIDAT;
+	S3C24X0_REG8	res[3];
+#endif
+	S3C24X0_REG32	SDIIMSK;
+} /*__attribute__((__packed__))*/ S3C2440_SDI;
 
 #if 0
 /* Memory control */

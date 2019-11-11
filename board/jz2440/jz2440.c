@@ -26,7 +26,7 @@
  */
 
 #include <common.h>
-#include <s3c2410.h>
+#include <s3c2440.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -102,8 +102,8 @@ int board_init (void)
 	gpio->GPHCON = 0x002AFAAA;
 	gpio->GPHUP = 0x000007FF;
 
-	/* arch number of SMDK2410-Board */
-	gd->bd->bi_arch_number = MACH_TYPE_SMDK2410;
+	/* arch number of JZ2440-Board */
+	gd->bd->bi_arch_number = MACH_TYPE_JZ2440;
 
 	/* adress of boot parameters */
 	gd->bd->bi_boot_params = 0x30000100;
