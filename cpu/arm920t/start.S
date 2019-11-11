@@ -108,9 +108,12 @@ FIQ_STACK_START:
  */
 
 reset:
-	/*
-	 * set the cpu to SVC32 mode
-	 */
+    /* set cpu to SVC32 mode
+     * Overrides R14_svc and SPSR_svc by copying the current values of the PC and CPSR into them. The value of the saved PC and SPSR is not defined.
+     * Forces M[4:0] to 10011(Supervisor mode),set the I and F bits in the CPSR, and clear the CPSR's T bit.
+     * FOrces the PC to fetch the next instruction from address 0x00
+     * Execution resumes in ARM states
+     */
 	mrs	r0,cpsr
 	bic	r0,r0,#0x1f
 	orr	r0,r0,#0xd3
@@ -126,6 +129,8 @@ reset:
 # define INTMSK		0x4A000008	/* Interupt-Controller base addresses */
 # define INTSUBMSK	0x4A00001C
 # define CLKDIVN	0x4C000014	/* clock divisor register */
+# define LOCKTIME 	0x4C000000
+# define MPLLCON	0x4C000004
 #endif
 
 #if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
@@ -139,17 +144,53 @@ reset:
 	mov	r1, #0xffffffff
 	ldr	r0, =INTMSK
 	str	r1, [r0]
-# if defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+#if defined(CONFIG_S3C2410)
 	ldr	r1, =0x3ff
 	ldr	r0, =INTSUBMSK
 	str	r1, [r0]
-# endif
+#endif
 
+#if defined(CONFIG_S3C2440)
+     /* sub interrupt source will not be serviced */
+    ldr r0, =INTSUBMSK
+    ldr r1, =0xffff
+    str r1, [r0]
+
+ 	/* set MPLL, FCLK : HCLK : PCLK = 400m : 100m : 50m */
+	/* LOCKTIME(0x4C000000) = 0xFFFFFFFF */
+	ldr r0, =LOCKTIME
+	ldr r1, =0xFFFFFFFF
+	str r1, [r0]
+
+	/* CLKDIVN(0x4C000014) = 0X5, tFCLK:tHCLK:tPCLK = 1:4:8  */
+	ldr r0, =CLKDIVN
+	ldr r1, =0x5
+	str r1, [r0]
+
+    /* set cpu to work in async bus mode */
+    mrc p15,0,r0,c1,c0,0
+    orr r0,r0,#0xc0000000
+    mcr p15,0,r0,c1,c0,0
+
+	/* set MPLLCON(0x4C000004) = (92<<12)|(1<<4)|(1<<0) 
+	 *  m = MDIV+8 = 92+8=100
+	 *  p = PDIV+2 = 1+2 = 3
+	 *  s = SDIV = 1
+	 *  FCLK = 2*m*Fin/(p*2^s) = 2*100*12/(3*2^1)=400M
+     * Once set PLL, lock time will be locked down until the output of PLL is stable
+     * then CPU works at the new frequency FCLK
+     */
+	ldr r0, =MPLLCON
+	ldr r1, =(92<<12)|(1<<4)|(1<<0)
+	str r1, [r0]
+#elif
 	/* FCLK:HCLK:PCLK = 1:2:4 */
 	/* default FCLK is 120 MHz ! */
 	ldr	r0, =CLKDIVN
 	mov	r1, #3
 	str	r1, [r0]
+#endif
+
 #endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 || defined(CONFIG_S3C2440) */
 
 	/*
