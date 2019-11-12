@@ -119,12 +119,16 @@ reset:
 	orr	r0,r0,#0xd3
 	msr	cpsr,r0
 
-/* turn off the watchdog */
 #if defined(CONFIG_S3C2400)
 # define pWTCON		0x15300000
 # define INTMSK		0x14400008	/* Interupt-Controller base addresses */
 # define CLKDIVN	0x14800014	/* clock divisor register */
-#elif defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+#elif defined(CONFIG_S3C2410)
+# define pWTCON		0x53000000
+# define INTMSK		0x4A000008	/* Interupt-Controller base addresses */
+# define INTSUBMSK	0x4A00001C
+# define CLKDIVN	0x4C000014	/* clock divisor register */
+#elif defined(CONFIG_S3C2440)
 # define pWTCON		0x53000000
 # define INTMSK		0x4A000008	/* Interupt-Controller base addresses */
 # define INTSUBMSK	0x4A00001C
@@ -134,6 +138,7 @@ reset:
 #endif
 
 #if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410) || defined(CONFIG_S3C2440)
+    /* turn off the watchdog */
 	ldr     r0, =pWTCON
 	mov     r1, #0x0
 	str     r1, [r0]
@@ -156,20 +161,25 @@ reset:
     ldr r1, =0xffff
     str r1, [r0]
 
- 	/* set MPLL, FCLK : HCLK : PCLK = 400m : 100m : 50m */
 	/* LOCKTIME(0x4C000000) = 0xFFFFFFFF */
 	ldr r0, =LOCKTIME
 	ldr r1, =0xFFFFFFFF
 	str r1, [r0]
 
+ 	/* set MPLL, FCLK : HCLK : PCLK = 400m : 100m : 50m */
 	/* CLKDIVN(0x4C000014) = 0X5, tFCLK:tHCLK:tPCLK = 1:4:8  */
 	ldr r0, =CLKDIVN
 	ldr r1, =0x5
 	str r1, [r0]
 
     /* set cpu to work in async bus mode */
+    /* If HDIVN is not 0, the CPU bus mode has to be changed from the fast bus mode to the asynchronous
+     * bus mode.If HDIVN is not 0 and the CPU bus mode is the fast bus mode, the CPU will operate by the HCLK.
+     * This feature can be used to change the CPU frequency as a half or more without affecting the HCLK
+     * and PCLK.
+     */
     mrc p15,0,r0,c1,c0,0
-    orr r0,r0,#0xc0000000
+    orr r0,r0,#0xc0000000 //R1_nF:OR:R1_iA
     mcr p15,0,r0,c1,c0,0
 
 	/* set MPLLCON(0x4C000004) = (92<<12)|(1<<4)|(1<<0) 
